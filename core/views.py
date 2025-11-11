@@ -1,3 +1,7 @@
-from django.shortcuts import render
+from django.http import HttpResponse, JsonResponse
 
-# Create your views here.
+def home(request):
+    return HttpResponse("Backend OK: Team3_BE is running.")
+
+def health_check(request):
+    return JsonResponse({"status": "ok"})
