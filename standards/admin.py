@@ -1,3 +1,5 @@
 from django.contrib import admin
+from .models import TreatmentStandard, DrugStandard
 
-# Register your models here.
+admin.site.register(TreatmentStandard)
+admin.site.register(DrugStandard)

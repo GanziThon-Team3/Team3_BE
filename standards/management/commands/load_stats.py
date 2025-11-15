@@ -51,7 +51,7 @@ class Command(BaseCommand):
                     age_group=row['age_group'], 
                     dept=row['dept'], 
                     disease=row['disease'], 
-                    avg_fee=row['avg_fee'], 
+                    avg_fee=float(row['avg_fee']), 
                     avg_days=float(row['avg_days']), # FloatField에 맞게 형변환
                 )
             )
@@ -81,12 +81,12 @@ class Command(BaseCommand):
         for _, row in df.iterrows(): 
             # 제품명에서 _(언더바)와 괄호 이전의 핵심 텍스트만 추출
             tmp = row['drug_name'].split('_')[0]
-            drug_name_cleaned = tmp.split('(')[0].strip()
+            cleaned_drug_name = tmp.split('(')[0].strip()
             
             records_to_create.append( 
                 DrugStandard(
                     age_group=row['age_group'], 
-                    drug_name=drug_name_cleaned, 
+                    drug_name=cleaned_drug_name, 
                     avg_daily_dose=float(row['avg_daily_dose']), 
                 )
             )
