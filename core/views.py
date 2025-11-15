@@ -1,7 +1,149 @@
-from django.http import HttpResponse, JsonResponse
+from rest_framework.views import APIView 
+from rest_framework.response import Response 
+from rest_framework import status 
+from standards.models import TreatmentStandard, DrugStandard
+from .serializers import ComparisonInputSerializer
 
-def home(request):
-    return HttpResponse("Backend OK: Team3_BE is running.")
+# 차이와 타입을 받아 텍스트로 반환하는 함수
+# 팀 상의 후 비율과 텍스트 수정 예정
+def _get_comparison_level(diff_percent, type='fee'):
+    if type == 'fee': # 비교 타입이 비용
+        if diff_percent > 20.0: # +20% 초과
+            return "초과"
+        elif diff_percent < -20.0: # -20% 미만
+            return "절감"
+        else: # 그 외(±20% 이내)
+            return "보통"
+            
+    elif type == 'days' or type == 'dose': # 비교 타입이 일수거나 투약량
+        if diff_percent > 10.0: # +10% 초과
+            return "과다"
+        elif diff_percent < -10.0: # -10% 미만
+            return "부족"
+        else: # 그 외(±10% 이내)
+            return "적정"
+            
+    return "판별불가"
 
-def health_check(request):
-    return JsonResponse({"status": "ok"})
+# 'compare/' 엔드포인트의 POST 요청 처리 클래스
+class ComparisonView(APIView):
+    # POST 요청시 실행되는 메인 함수
+    def post(self, request):
+        serializer = ComparisonInputSerializer(data=request.data)
+        # Serializer의 유효성 검사 -> 실패 시 에러 메시지를 400 코드로 반환
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=400)
+
+        # 파이썬 딕셔너리로 타입 변환 및 정제까지 완료된 데이터
+        validated_data = serializer.validated_data
+        
+        # 핵심 비교 로직을 수행하는 내부 함수 호출
+        # 사용자 입력 데이터는 DB 저장 없이 이 함수 내에서만 사용됨
+        comparison_results = self._perform_comparison(validated_data) 
+        
+        # 건강 정보 추천 로직 추가
+
+        return Response({
+            "comparison_results": comparison_results, 
+            # 여기에 건강 정보 추천 결과값 추가
+        }, status=200)
+
+    # 실제 비교 로직 함수
+    def _perform_comparison(self, data):
+        results = {} # 최종 결과 딕셔너리
+        
+        age_group = data['age_group']
+        disease = data['disease']
+        dept = data['dept']
+        user_fee = data['user_fee']
+        user_days = data['user_days']
+        is_saturday = data['is_saturday']
+        is_night = data['is_night']
+        # drug_items는 선택적 필드 -> 없으면 빈 리스트 반환
+        drug_items = data.get('drug_items', [])
+
+        # ----- 진료내역 DB 비교 로직
+        try: # 주상병, 진료과목, 연령대를 기준으로 TreatmentStandard DB 조회 -> 실패 시 예외처리로
+            treatment_standard = TreatmentStandard.objects.get(
+                disease=disease, 
+                dept=dept, 
+                age_group=age_group
+            )
+            avg_fee = treatment_standard.avg_fee
+            avg_days = treatment_standard.avg_days
+
+            # 비용 비교
+            # 토요일/야간 -> user_fee를 1.3으로 나눠 일반 비용으로 변환
+            user_fee = user_fee / 1.3 if (is_saturday or is_night) else user_fee    
+            # (사용자 입력 비용 - 평균비용) / 평균비용 * 100 -> 0 나누기 방지 필요
+            if avg_fee > 0:
+                fee_diff_percent = ((user_fee - avg_fee) / avg_fee) * 100
+            elif user_fee > 0:
+                fee_diff_percent = 9999.0 # 평균은 0인데 사용자가 비용을 지불한 경우 -> 압도적으로 높음
+            else:
+                fee_diff_percent = 0 # 평균도 0이고 사용자도 0인 경우 -> 차이 없음
+            results['treatment_fee'] = {
+                'avg_fee': round(avg_fee), # DB 평균 비용(반올림)
+                'user_fee': user_fee, # 사용자 입력 비용
+                'difference_percent': round(fee_diff_percent, 2), 
+                'level_text': _get_comparison_level(fee_diff_percent, 'fee'), 
+            }
+
+            # 처방일수 비교
+            # (사용자 입력 일수 - 평균일수) / 평균일수 * 100
+            if avg_days > 0:
+                days_diff_percent = ((user_days - avg_days) / avg_days) * 100
+            elif user_days > 0:
+                days_diff_percent = 9999.0
+            else:
+                days_diff_percent = 0
+            results['treatment_days'] = {
+                'avg_days': round(avg_days, 1), # DB 평균 일수
+                'user_days': user_days, # 사용자 입력 일수
+                'difference_percent': round(days_diff_percent, 2),
+                'level_text': _get_comparison_level(days_diff_percent, 'days'), 
+            }  
+        except TreatmentStandard.DoesNotExist: 
+            results['treatment_error'] = {"message": "해당 조건의 진료내역 기준 데이터가 DB에 없습니다."}
+            
+        # ----- 의약품 DB 비교 로직
+        drug_comparison_results = [] # 약품별 비교 결과 전체 리스트
+
+        for item in drug_items:
+            drug_name = item['drug_name']
+            user_daily_dose = item['user_daily_dose']
+
+            tmp = drug_name.split('_')[0]
+            cleaned_drug_name = tmp.split('(')[0].strip()
+            
+            comparison_item = {'drug_name': drug_name} # 개별 약품 결과 딕셔너리, 사용자 입력 약품명 추가
+
+            try: # 정제된 약품명, 연령대를 기준으로 DrugStandard DB 조회 -> 실패 시 예외처리로
+                drug_standard = DrugStandard.objects.get(
+                    drug_name=cleaned_drug_name, 
+                    age_group=age_group
+                )
+                avg_daily_dose = drug_standard.avg_daily_dose
+                
+                # (사용자량 - 평균량) / 평균량 * 100
+                if avg_daily_dose > 0:
+                    dose_diff_percent = ((user_daily_dose - avg_daily_dose) / avg_daily_dose) * 100
+                elif user_daily_dose > 0:
+                    dose_diff_percent = 9999.0
+                else:
+                    dose_diff_percent = 0
+
+                comparison_item.update({
+                    'avg_daily_dose': round(avg_daily_dose, 2),
+                    'user_daily_dose': user_daily_dose,
+                    'difference_percent': round(dose_diff_percent, 2),
+                    'level_text': _get_comparison_level(dose_diff_percent, 'dose'),
+                })
+            except DrugStandard.DoesNotExist: 
+                 comparison_item['drug_error'] = f"약품 '{drug_name}' 기준 데이터가 없습니다."
+            
+            drug_comparison_results.append(comparison_item) # 개별 약품 결과를 전체 리스트에 추가
+    
+        results['drug_items_comparison'] = drug_comparison_results
+
+        return results # 모든 비교가 완료된 최종 results 반환
