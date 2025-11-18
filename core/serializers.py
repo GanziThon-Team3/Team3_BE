@@ -3,7 +3,10 @@ from rest_framework import serializers
 # 약품 하나의 구조와 타입 정의
 class DrugItemSerializer(serializers.Serializer):
     drug_name = serializers.CharField(max_length=200, help_text="처방 약품 제품명") 
-    user_daily_dose = serializers.FloatField(min_value=0.0, help_text="처방 받은 1일 투약량")
+    # 1일 투약량 계산에 사용
+    user_once_dose = serializers.FloatField(min_value=0.0, help_text="처방 받은 1회 투약량") 
+    user_daily_times = serializers.FloatField(min_value=0.0, help_text="처방 받은 1일 투약 횟수")
+    user_days = serializers.FloatField(min_value=0.0, help_text="사용자 처방 일수")
 
 # 사용자 입력 데이터 구조와 타입 정의
 class ComparisonInputSerializer(serializers.Serializer):
@@ -15,7 +18,6 @@ class ComparisonInputSerializer(serializers.Serializer):
     
     # 평균값 DB와 비교할 사용자 입력값
     user_fee = serializers.IntegerField(min_value=0, help_text="사용자 지불 본인부담금")
-    user_days = serializers.IntegerField(min_value=0, help_text="사용자 처방 일수") 
     
     # 비용 비교 시 사용
     is_saturday = serializers.BooleanField(default=False, help_text="토요일 진료 여부") 

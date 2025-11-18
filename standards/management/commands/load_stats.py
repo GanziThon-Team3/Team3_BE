@@ -10,7 +10,7 @@ class Command(BaseCommand):
 
         BASE_DIR = 'data/' # 데이터 파일 디렉토리
         TREATMENT_FILE = BASE_DIR + 'treat_stats_2023.csv' # 진료내역 파일 경로
-        DRUG_FILE = BASE_DIR + 'drug_stats.xlsx' # 의약품처방 파일 경로
+        DRUG_FILE = BASE_DIR + 'drug_stats.csv' # 의약품처방 파일 경로
 
         self._load_treatment_data(TREATMENT_FILE) # 진료내역 데이터 로드 함수 호출
         self._load_drug_data(DRUG_FILE) # 의약품처방 데이터 로드 함수 호출
@@ -30,15 +30,17 @@ class Command(BaseCommand):
             5: "정형외과",
         }
         
-        df = pd.read_csv(file_path) # 판다스를 사용해 엑셀 파일 읽기(DataFrame 생성)
+        df = pd.read_csv(file_path) # 판다스를 사용해 csv 파일 읽기(DataFrame 생성)
 
-        # 컬럼명 매핑 (엑셀 컬럼명 -> 모델 필드명)
+        # 컬럼명 매핑 (csv 컬럼명 -> 모델 필드명)
         df = df.rename(columns={ 
             'main_diag': 'disease',
+            'disease_name': 'disease_name',
             'dept': 'dept_code', # 변환 전 코드
             'age_group': 'age_group',
             'mean_copay': 'avg_fee',
             'mean_days': 'avg_days',
+            'sample_count': 'sample_count',
         })
 
         df['dept'] = df['dept_code'].map(DEPT_CODE_MAPPING) # 진료 과목 코드 매핑
@@ -51,8 +53,10 @@ class Command(BaseCommand):
                     age_group=row['age_group'], 
                     dept=row['dept'], 
                     disease=row['disease'], 
+                    disease_name=row['disease_name'],
                     avg_fee=float(row['avg_fee']), 
                     avg_days=float(row['avg_days']), # FloatField에 맞게 형변환
+                    sample_count=int(row['sample_count'])
                 )
             )
 
@@ -67,15 +71,16 @@ class Command(BaseCommand):
     def _load_drug_data(self, file_path): 
         self.stdout.write(self.style.NOTICE(f"Loading Drug data from {file_path}..."))
         
-        df = pd.read_excel(file_path)
+        df = pd.read_csv(file_path)
 
         df = df.rename(columns={ 
-            '연령대': 'age_group',
-            '약품명': 'drug_name',
-            '1일투약량': 'avg_daily_dose',
+            'short_name': 'drug_name',
+            'age_group': 'age_group',
+            'mean_total_dose': 'avg_total_dose',
+            'sample_count': 'sample_count',
         })
-        
-        df = df.dropna(subset=['drug_name', 'age_group']) # drug_name이 없는 행 제거
+
+        df = df.dropna(subset=['drug_name', 'age_group'])
 
         records_to_create = []
         for _, row in df.iterrows(): 
@@ -87,12 +92,13 @@ class Command(BaseCommand):
                 DrugStandard(
                     age_group=row['age_group'], 
                     drug_name=cleaned_drug_name, 
-                    avg_daily_dose=float(row['avg_daily_dose']), 
+                    avg_total_dose=float(row['avg_total_dose']), 
+                    sample_count=int(row['sample_count']),
                 )
             )
 
         with transaction.atomic():
             DrugStandard.objects.all().delete()
-            DrugStandard.objects.bulk_create(records_to_create, batch_size=1000)
+            DrugStandard.objects.bulk_create(records_to_create, batch_size=1000, ignore_conflicts=True)
 
         self.stdout.write(self.style.SUCCESS(f"Successfully loaded {len(records_to_create)} Drug records."))
