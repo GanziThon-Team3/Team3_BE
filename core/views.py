@@ -1,28 +1,17 @@
 from rest_framework.views import APIView 
-from rest_framework.response import Response 
-from rest_framework import status 
+from rest_framework.response import Response
 from standards.models import TreatmentStandard, DrugStandard
 from .serializers import ComparisonInputSerializer
 
 # 차이와 타입을 받아 텍스트로 반환하는 함수
 # 팀 상의 후 비율과 텍스트 수정 예정
-def _get_comparison_level(diff_percent, type='fee'):
-    if type == 'fee': # 비교 타입이 비용
-        if diff_percent > 20.0: # +20% 초과
-            return "초과"
-        elif diff_percent < -20.0: # -20% 미만
-            return "절감"
-        else: # 그 외(±20% 이내)
-            return "보통"
-            
-    elif type == 'days' or type == 'dose': # 비교 타입이 일수거나 투약량
-        if diff_percent > 10.0: # +10% 초과
-            return "과다"
-        elif diff_percent < -10.0: # -10% 미만
-            return "부족"
-        else: # 그 외(±10% 이내)
-            return "적정"
-            
+def _get_comparison_level(diff_percent):
+    if diff_percent > 10.0: # +10% 초과
+        return "높음"
+    elif diff_percent < -10.0: # -10% 미만
+        return "낮음"
+    else: # 그 외(±10% 이내)
+        return "평균"    
     return "판별불가"
 
 # 'compare/' 엔드포인트의 POST 요청 처리 클래스
@@ -52,11 +41,18 @@ class ComparisonView(APIView):
     def _perform_comparison(self, data):
         results = {} # 최종 결과 딕셔너리
         
+        max_user_days = 0
+        for item in data.get('drug_items', []):
+            # 약품 항목에서 처방일수 추출
+            current_days = float(item['user_days'])
+            if current_days > max_user_days:
+                max_user_days = current_days
+
         age_group = data['age_group']
         disease = data['disease']
         dept = data['dept']
         user_fee = data['user_fee']
-        user_days = data['user_days']
+        user_days = max_user_days
         is_saturday = data['is_saturday']
         is_night = data['is_night']
         # drug_items는 선택적 필드 -> 없으면 빈 리스트 반환
@@ -71,6 +67,7 @@ class ComparisonView(APIView):
             )
             avg_fee = treatment_standard.avg_fee
             avg_days = treatment_standard.avg_days
+            sample_count = treatment_standard.sample_count
 
             # 비용 비교
             # 토요일/야간 -> user_fee를 1.3으로 나눠 일반 비용으로 변환
@@ -83,10 +80,11 @@ class ComparisonView(APIView):
             else:
                 fee_diff_percent = 0 # 평균도 0이고 사용자도 0인 경우 -> 차이 없음
             results['treatment_fee'] = {
+                'sample_count': sample_count,
                 'avg_fee': round(avg_fee), # DB 평균 비용(반올림)
                 'user_fee': user_fee, # 사용자 입력 비용
                 'difference_percent': round(fee_diff_percent, 2), 
-                'level_text': _get_comparison_level(fee_diff_percent, 'fee'), 
+                'level_text': _get_comparison_level(fee_diff_percent), 
             }
 
             # 처방일수 비교
@@ -98,10 +96,11 @@ class ComparisonView(APIView):
             else:
                 days_diff_percent = 0
             results['treatment_days'] = {
+                'sample_count': sample_count,
                 'avg_days': round(avg_days, 1), # DB 평균 일수
                 'user_days': user_days, # 사용자 입력 일수
                 'difference_percent': round(days_diff_percent, 2),
-                'level_text': _get_comparison_level(days_diff_percent, 'days'), 
+                'level_text': _get_comparison_level(days_diff_percent), 
             }  
         except TreatmentStandard.DoesNotExist: 
             results['treatment_error'] = {"message": "해당 조건의 진료내역 기준 데이터가 DB에 없습니다."}
@@ -111,7 +110,9 @@ class ComparisonView(APIView):
 
         for item in drug_items:
             drug_name = item['drug_name']
-            user_daily_dose = item['user_daily_dose']
+            user_once_dose = item['user_once_dose']
+            user_daily_times = item['user_daily_times']
+            user_days = item['user_days']
 
             tmp = drug_name.split('_')[0]
             cleaned_drug_name = tmp.split('(')[0].strip()
@@ -123,21 +124,25 @@ class ComparisonView(APIView):
                     drug_name=cleaned_drug_name, 
                     age_group=age_group
                 )
-                avg_daily_dose = drug_standard.avg_daily_dose
-                
+                avg_total_dose = drug_standard.avg_total_dose
+                sample_count = drug_standard.sample_count
+                # 1회 투약량*1일 투약 횟수로 1일 투약량 계산
+                user_total_dose = user_once_dose * user_daily_times * user_days
+
                 # (사용자량 - 평균량) / 평균량 * 100
-                if avg_daily_dose > 0:
-                    dose_diff_percent = ((user_daily_dose - avg_daily_dose) / avg_daily_dose) * 100
-                elif user_daily_dose > 0:
+                if avg_total_dose > 0:
+                    dose_diff_percent = ((user_total_dose - avg_total_dose) / avg_total_dose) * 100
+                elif user_total_dose > 0:
                     dose_diff_percent = 9999.0
                 else:
                     dose_diff_percent = 0
 
                 comparison_item.update({
-                    'avg_daily_dose': round(avg_daily_dose, 2),
-                    'user_daily_dose': user_daily_dose,
+                    'sample_count': sample_count,
+                    'avg_total_dose': round(avg_total_dose, 2),
+                    'user_total_dose': user_total_dose,
                     'difference_percent': round(dose_diff_percent, 2),
-                    'level_text': _get_comparison_level(dose_diff_percent, 'dose'),
+                    'level_text': _get_comparison_level(dose_diff_percent),
                 })
             except DrugStandard.DoesNotExist: 
                  comparison_item['drug_error'] = f"약품 '{drug_name}' 기준 데이터가 없습니다."
