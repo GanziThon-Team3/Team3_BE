@@ -91,7 +91,9 @@
 
 
 &nbsp;&nbsp;`user_days`: 일수, 실수형  
+
 <br>
+
 - **Request Body:**
 ```
 {
@@ -117,6 +119,7 @@
 }
 ```
 <br>
+
 - **Response:**
 ```
 {
@@ -154,6 +157,7 @@
 }
 ```
 <br>
+
 - **응답 설명** 
 
 
@@ -175,7 +179,7 @@
 
 
 &nbsp;&nbsp;`difference_percent`: 평균 보다 얼마나 더 지불했는지(퍼센트, 실수형)  
-&nbsp;*9999.0일 경우 평균이 0이고, 사용자 지불이 있는 경우  
+&nbsp;&nbsp;*9999.0일 경우 평균이 0이고, 사용자 지불이 있는 경우  
 
 
 &nbsp;&nbsp;`level_text`: 라벨링에 사용  
@@ -225,6 +229,7 @@
 
 
 <br>
+
 **Status Codes**
 
 - `201 Created` 성공
