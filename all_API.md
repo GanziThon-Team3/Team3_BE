@@ -20,10 +20,10 @@
 - **설명** 
 
 
-`disease`: 질병 코드(대문자, 숫자만 허용)
+&nbsp;&nbsp;`disease`: 질병 코드(대문자, 숫자만 허용)
 
 
-`drug_name`: 약품 이름
+&nbsp;&nbsp;`drug_name`: 약품 이름
 
 
 
@@ -42,7 +42,7 @@
 ”health_tip”:”STR”
 }
 ```
-**Status Codes**
+- **Status Codes**
 
 - `201 Created` 성공
 
@@ -57,39 +57,39 @@
 - **요청 설명** 
 
 
-`dept`: 진료 과목  
+&nbsp;&nbsp;`dept`: 진료 과목  
 
 
-`age_group`: 연령대(미성년자/성인/고령자)  
+&nbsp;&nbsp;`age_group`: 연령대(미성년자/성인/고령자)  
 
 
-`disease`: 질병 코드(대문자, 숫자만 허용)  
+&nbsp;&nbsp;`disease`: 질병 코드(대문자, 숫자만 허용)  
 
 
-`user_fee`: 사용자 부담금, 정수형  
+&nbsp;&nbsp;`user_fee`: 사용자 부담금, 정수형  
 
 
-`is_saturday`: 토요일/공휴일 여부(false/true)  
+&nbsp;&nbsp;`is_saturday`: 토요일/공휴일 여부(false/true)  
 
 
-`is_night`: 야간 여부(false/ture)  
+&nbsp;&nbsp;`is_night`: 야간 여부(false/ture)  
 
 
 · · ·
 
-`drug_items`: 약품 객체 리스트  
+&nbsp;&nbsp;`drug_items`: 약품 객체 리스트  
 
 
-`drug_name`: 약품 이름  
+&nbsp;&nbsp;`drug_name`: 약품 이름  
 
 
-`user_once_dose`: 투약량, 실수형  
+&nbsp;&nbsp;`user_once_dose`: 투약량, 실수형  
 
 
-`user_daily_times`: 횟수, 실수형  
+&nbsp;&nbsp;`user_daily_times`: 횟수, 실수형  
 
 
-`user_days`: 일수, 실수형  
+&nbsp;&nbsp;`user_days`: 일수, 실수형  
 
 - **Request Body:**
 ```
@@ -155,75 +155,75 @@
 - **응답 설명** 
 
 
-`comparision_results`: 비교 결과 객체  
+&nbsp;&nbsp;`comparision_results`: 비교 결과 객체  
 
 
 · · ·
 
-`treatment_fee`: 진료비 비교 객체  
+&nbsp;&nbsp;`treatment_fee`: 진료비 비교 객체  
 
 
-`sample_count`: 비교 표본 수(정수형)  
+&nbsp;&nbsp;`sample_count`: 비교 표본 수(정수형)  
 
 
-`avg_fee`: 평균 진료비(실수형)  
+&nbsp;&nbsp;`avg_fee`: 평균 진료비(실수형)  
 
 
-`user_fee`: 사용자 지불 비용(정수형)  
+&nbsp;&nbsp;`user_fee`: 사용자 지불 비용(정수형)  
 
 
-`difference_percent`: 평균 보다 얼마나 더 지불했는지(퍼센트, 실수형)  
+&nbsp;&nbsp;`difference_percent`: 평균 보다 얼마나 더 지불했는지(퍼센트, 실수형)  
 *9999.0일 경우 평균이 0이고, 사용자 지불이 있는 경우  
 
 
-`level_text`: 라벨링에 사용  
+&nbsp;&nbsp;`level_text`: 라벨링에 사용  
 
 · · ·
 
 
-`treatment_days`: 처방일수 비교 객체  
+&nbsp;&nbsp;`treatment_days`: 처방일수 비교 객체  
 
 
-`sample_count`: 비교 표본 수(정수형)  
+&nbsp;&nbsp;`sample_count`: 비교 표본 수(정수형)  
 
 
-`avg_days`: 평균 처방 일수(실수형)  
+&nbsp;&nbsp;`avg_days`: 평균 처방 일수(실수형)  
 
 
-`user_days`: 사용자 입력 처방 일수(정수형)  
+&nbsp;&nbsp;`user_days`: 사용자 입력 처방 일수(정수형)  
 
 
-`difference_percent`: 평균 보다 얼마나 더 처방 받았는지(퍼센트, 실수형)  
+&nbsp;&nbsp;`difference_percent`: 평균 보다 얼마나 더 처방 받았는지(퍼센트, 실수형)  
 
 
-`level_text`: 라벨링에 사용  
+&nbsp;&nbsp;`level_text`: 라벨링에 사용  
 
 
 · · ·
 
-`drug_items_comparison`: 약품별 비교 객체 리스트  
+&nbsp;&nbsp;`drug_items_comparison`: 약품별 비교 객체 리스트  
 
 
-`drug_name`: 약품 이름  
+&nbsp;&nbsp;`drug_name`: 약품 이름  
 
 
-`sample_count`: 비교 표본 수(정수형)  
+&nbsp;&nbsp;`sample_count`: 비교 표본 수(정수형)  
 
 
-`avg_total_dose`: 평균 총 투약량(실수형)  
+&nbsp;&nbsp;`avg_total_dose`: 평균 총 투약량(실수형)  
 
 
-`user_total_dose`: 사용자 입력 총 투약량(실수형)  
+&nbsp;&nbsp;`user_total_dose`: 사용자 입력 총 투약량(실수형)  
 
 
-`difference_percent`: 평균 보다 얼마나 더 처방 받았는지(퍼센트, 실수형)  
+&nbsp;&nbsp;`difference_percent`: 평균 보다 얼마나 더 처방 받았는지(퍼센트, 실수형)  
 
 
-`level_text`: 라벨링에 사용
+&nbsp;&nbsp;`level_text`: 라벨링에 사용
 
 
 
-**Status Codes**
+- **Status Codes**
 
 - `201 Created` 성공
 
