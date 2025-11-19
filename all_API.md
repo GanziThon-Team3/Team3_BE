@@ -28,7 +28,7 @@
 
 <br>
 
-- **Request Body:**
+- **Request Body :**
 ```
 {
   "disease”:”세파피린정”,    "drug_name": "세파피린정"
@@ -36,7 +36,7 @@
 ```
 <br>
 
-- **Response:**
+- **Response :**
 ```
 {
   ”disease_info”:”STR”,
@@ -97,7 +97,7 @@
 
 <br>
 
-- **Request Body:**
+- **Request Body :**
 ```
 {
 "dept": "내과",
@@ -123,7 +123,7 @@
 ```
 <br>
 
-- **Response:**
+- **Response :**
 ```
 {
 "comparison_results": {
