@@ -75,7 +75,7 @@
 `is_night`: 야간 여부(false/ture)  
 
 
-
+· · ·
 
 `drug_items`: 약품 객체 리스트  
 
@@ -158,7 +158,7 @@
 `comparision_results`: 비교 결과 객체  
 
 
-
+· · ·
 
 `treatment_fee`: 진료비 비교 객체  
 
@@ -178,7 +178,7 @@
 
 `level_text`: 라벨링에 사용  
 
-
+· · ·
 
 
 `treatment_days`: 처방일수 비교 객체  
@@ -199,7 +199,7 @@
 `level_text`: 라벨링에 사용  
 
 
-
+· · ·
 
 `drug_items_comparison`: 약품별 비교 객체 리스트  
 
