@@ -27,6 +27,7 @@
 
 
 <br>
+
 - **Request Body:**
 ```
 {
@@ -34,6 +35,7 @@
 }
 ```
 <br>
+
 - **Response:**
 ```
 {
@@ -43,6 +45,7 @@
 }
 ```
 <br>
+
 **Status Codes**
 
 - `201 Created` 성공
@@ -76,7 +79,7 @@
 &nbsp;&nbsp;`is_night`: 야간 여부(false/ture)  
 
 
-· · ·
+&nbsp;&nbsp;· · ·
 
 &nbsp;&nbsp;`drug_items`: 약품 객체 리스트  
 
@@ -164,7 +167,7 @@
 &nbsp;&nbsp;`comparision_results`: 비교 결과 객체  
 
 
-· · ·
+&nbsp;&nbsp;· · ·
 
 &nbsp;&nbsp;`treatment_fee`: 진료비 비교 객체  
 
@@ -184,7 +187,7 @@
 
 &nbsp;&nbsp;`level_text`: 라벨링에 사용  
 
-· · ·
+&nbsp;&nbsp;· · ·
 
 
 &nbsp;&nbsp;`treatment_days`: 처방일수 비교 객체  
@@ -205,7 +208,7 @@
 &nbsp;&nbsp;`level_text`: 라벨링에 사용  
 
 
-· · ·
+&nbsp;&nbsp;· · ·
 
 &nbsp;&nbsp;`drug_items_comparison`: 약품별 비교 객체 리스트  
 
