@@ -26,14 +26,14 @@
 &nbsp;&nbsp;`drug_name`: 약품 이름
 
 
-
+<br>
 - **Request Body:**
 ```
 {
   "disease”:”세파피린정”,    "drug_name": "세파피린정"
 }
 ```
-
+<br>
 - **Response:**
 ```
 {
@@ -42,7 +42,8 @@
 ”health_tip”:”STR”
 }
 ```
-- **Status Codes**
+<br>
+**Status Codes**
 
 - `201 Created` 성공
 
@@ -90,7 +91,7 @@
 
 
 &nbsp;&nbsp;`user_days`: 일수, 실수형  
-
+<br>
 - **Request Body:**
 ```
 {
@@ -115,7 +116,7 @@
     ]
 }
 ```
-
+<br>
 - **Response:**
 ```
 {
@@ -152,6 +153,7 @@
 }
 }
 ```
+<br>
 - **응답 설명** 
 
 
@@ -173,7 +175,7 @@
 
 
 &nbsp;&nbsp;`difference_percent`: 평균 보다 얼마나 더 지불했는지(퍼센트, 실수형)  
-*9999.0일 경우 평균이 0이고, 사용자 지불이 있는 경우  
+&nbsp;*9999.0일 경우 평균이 0이고, 사용자 지불이 있는 경우  
 
 
 &nbsp;&nbsp;`level_text`: 라벨링에 사용  
@@ -222,8 +224,8 @@
 &nbsp;&nbsp;`level_text`: 라벨링에 사용
 
 
-
-- **Status Codes**
+<br>
+**Status Codes**
 
 - `201 Created` 성공
 
