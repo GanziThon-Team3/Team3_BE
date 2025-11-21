@@ -1,12 +1,13 @@
 from rest_framework.views import APIView 
 from rest_framework.response import Response
-from standards.models import TreatmentStandard, DrugStandard
-from .serializers import ComparisonInputSerializer
+from standards.models import TreatmentStandard, DrugStandard, DiseaseMapping
+from .serializers import ComparisonInputSerializer, DiseaseSearchSerializer
 from .ai_graph import graph
 from rest_framework import status
 from .ai_tool_call import ai_answer
+from rest_framework import generics
+from rest_framework.exceptions import ValidationError
 
-# 차이와 타입을 받아 텍스트로 반환하는 함수
 # 팀 상의 후 비율과 텍스트 수정 예정
 def _get_comparison_level(diff_percent):
     if diff_percent > 10.0: # +10% 초과
@@ -216,3 +217,19 @@ class AiAnswerView(APIView):
                 {"error": str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
+# 질병 코드 매핑
+class DiseaseSearchView(generics.ListAPIView):
+    serializer_class = DiseaseSearchSerializer
+    
+    # GET 요청시 실행, 쿼리셋 반환
+    def get_queryset(self):
+        # 쿼리 파라미터값 가져옴(없으면 빈 문자열('') 반환)
+        query = self.request.query_params.get('query', '')
+        
+        if not query or len(query) < 2: # 쿼리 파라미터가 없거나 너무 짧으면 빈 쿼리셋 반환
+            return DiseaseMapping.objects.none()
+
+        # query를 포함하는 모든 DiseaseMapping 객체 필터링
+        return DiseaseMapping.objects.filter(
+            disease_name__icontains=query
+        )
