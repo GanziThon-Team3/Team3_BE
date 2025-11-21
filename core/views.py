@@ -4,6 +4,7 @@ from standards.models import TreatmentStandard, DrugStandard
 from .serializers import ComparisonInputSerializer
 from .ai_graph import graph
 from rest_framework import status
+from .ai_tool_call import ai_answer
 
 # 차이와 타입을 받아 텍스트로 반환하는 함수
 # 팀 상의 후 비율과 텍스트 수정 예정
@@ -194,3 +195,24 @@ class AiInfoView(APIView):
 
         # 디버깅용
         # return Response(final_state, status=status.HTTP_200_OK)
+
+class AiAnswerView(APIView):
+    def post(self, request, *args, **kwargs):
+        question = request.data.get("question")
+
+        if not question:
+            return Response(
+                {"error": "question 필드를 body에 포함해주세요."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            result = ai_answer(question).get("result")
+
+            return Response({"result": result}, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
