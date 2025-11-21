@@ -11,13 +11,13 @@ from typing import TypedDict, Optional
 import json
 from langchain_core.messages import SystemMessage, HumanMessage
 
-llm = ChatOpenAI(
-        api_key=config("gpt_key"),
-        model="gpt-4o-mini",
-        temperature=0.2
-    )
+# llm = ChatOpenAI(
+#         api_key=config("gpt_key"),
+#         model="gpt-4o-mini",
+#         temperature=0.2
+#     )
 
-# llm = ChatUpstage(api_key=config("upstage_key"), model="solar-pro2")
+llm = ChatUpstage(api_key=config("upstage_key"), model="solar-pro2")
 
 class MedicalState(TypedDict):
     disease_name: str
