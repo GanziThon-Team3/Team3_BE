@@ -3,8 +3,9 @@ from langchain.tools import tool
 
 from langchain_upstage import ChatUpstage
 from decouple import config
+import os
 
-BASE_URL = "http://localhost:3000"
+BASE_URL = os.getenv("BASE_URL", "http://localhost:3000")
 
 llm = ChatUpstage(api_key=config("upstage_key"), model="solar-pro2")
 

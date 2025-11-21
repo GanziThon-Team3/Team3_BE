@@ -272,8 +272,10 @@ async function startHttpServer() {
 
     // 서버 시작
     const PORT = 3000;
-    app.listen(PORT, () => {
-        console.log(`🌐 Medical MCP HTTP server running at http://localhost:${PORT}`);
+    const HOST = '0.0.0.0';
+
+    app.listen(PORT, HOST, () => {
+        console.log(`🌐 Medical MCP HTTP server running at http://${HOST}:${PORT}`);
     });
 }
 
