@@ -127,13 +127,11 @@ def generate(state: MedicalState):
     try:
         data = json.loads(raw_text)
     except Exception:
-        # return raw_text
-        return raw_text
-        # raise ValueError(
-        #     "LLM 응답(JSON) 파싱 실패: 모델이 JSON 형식을 지키지 않았습니다. "
-        #     "다시 시도해 주세요."
-        #     "{raw_text}"
-        # )
+        raise ValueError(
+            "LLM 응답(JSON) 파싱 실패: 모델이 JSON 형식을 지키지 않았습니다. "
+            "다시 시도해 주세요."
+            "{raw_text}"
+        )
 
     disease_summary = data.get("disease_info", "")
     drug_summary = data.get("drug_info", "")

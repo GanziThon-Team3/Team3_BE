@@ -192,10 +192,10 @@ class AiInfoView(APIView):
         }
 
         final_state = graph.invoke(initial_state)
-        return Response(final_state["result"], status=status.HTTP_200_OK)
+        # return Response(final_state["result"], status=status.HTTP_200_OK)
 
         # 디버깅용
-        # return Response(final_state, status=status.HTTP_200_OK)
+        return Response(final_state, status=status.HTTP_200_OK)
 
 class AiAnswerView(APIView):
     def post(self, request, *args, **kwargs):
