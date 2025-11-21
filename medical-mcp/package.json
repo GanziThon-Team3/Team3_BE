@@ -1,0 +1,57 @@
+{
+    "name": "medical-mcp",
+    "version": "1.0.5",
+    "type": "module",
+    "bin": {
+        "medical-mcp": "./build/index.js"
+    },
+    "scripts": {
+        "build": "tsc",
+        "start": "node build/index.js",
+        "start:http": "node build/index.js --http",
+        "start:http:port": "node build/index.js --http --port=3000",
+        "dev": "npm run build && npm run start",
+        "dev:http": "npm run build && npm run start:http",
+        "postinstall": "node scripts/postinstall.js"
+    },
+    "files": [
+        "build",
+        "scripts"
+    ],
+    "main": "index.js",
+    "keywords": [
+        "medical",
+        "healthcare",
+        "drugs",
+        "fda",
+        "who",
+        "pubmed",
+        "mcp"
+    ],
+    "author": "jamesanz",
+    "license": "ISC",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/jamesanz/medical-mcp.git"
+    },
+    "homepage": "https://github.com/jamesanz/medical-mcp#readme",
+    "bugs": {
+        "url": "https://github.com/jamesanz/medical-mcp/issues"
+    },
+    "description": "A Model Context Protocol (MCP) server that provides comprehensive medical information by querying multiple authoritative medical APIs including FDA, WHO, PubMed, and RxNorm.",
+    "dependencies": {
+        "@modelcontextprotocol/sdk": "^1.15.0",
+        "express": "^5.1.0",
+        "minimist": "^1.2.8",
+        "puppeteer": "^24.12.1",
+        "superagent": "^10.2.2",
+        "zod": "^3.25.75"
+    },
+    "devDependencies": {
+        "@types/express": "^5.0.5",
+        "@types/minimist": "^1.2.5",
+        "@types/node": "^24.0.10",
+        "@types/superagent": "^8.1.9",
+        "typescript": "^5.8.3"
+    }
+}
