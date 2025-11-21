@@ -4,6 +4,7 @@ from standards.models import TreatmentStandard, DrugStandard, DiseaseMapping
 from .serializers import ComparisonInputSerializer, DiseaseSearchSerializer
 from .ai_graph import graph
 from rest_framework import status
+from .ai_tool_call import ai_answer
 from rest_framework import generics
 from rest_framework.exceptions import ValidationError
 
@@ -196,6 +197,26 @@ class AiInfoView(APIView):
         # 디버깅용
         # return Response(final_state, status=status.HTTP_200_OK)
 
+class AiAnswerView(APIView):
+    def post(self, request, *args, **kwargs):
+        question = request.data.get("question")
+
+        if not question:
+            return Response(
+                {"error": "question 필드를 body에 포함해주세요."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            result = ai_answer(question).get("result")
+
+            return Response({"result": result}, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 # 질병 코드 매핑
 class DiseaseSearchView(generics.ListAPIView):
     serializer_class = DiseaseSearchSerializer
