@@ -6,7 +6,8 @@
         "medical-mcp": "./build/index.js"
     },
     "scripts": {
-        "build": "tsc",
+        "_build_window": "tsc",
+        "build": "tsc && chmod 755 build/index.js",
         "start": "node build/index.js",
         "start:http": "node build/index.js --http",
         "start:http:port": "node build/index.js --http --port=3000",
