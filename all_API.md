@@ -104,6 +104,7 @@
 
 
 <br>
+<hr style="border: 0; height: 1px; background: #ddd;">
 
 **2. 결과 보기**
 - **URL:** `/compare/`
