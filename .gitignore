@@ -10,6 +10,7 @@ __pycache__/
 .venv/
 env/
 venv/
+myvenv/
 
 # Editor / OS files
 .vscode/
@@ -18,3 +19,9 @@ venv/
 
 # Environment variables
 *.env
+
+# Data
+data/
+
+# 인증서 발급용
+cerf_file/
