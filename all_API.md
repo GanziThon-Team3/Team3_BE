@@ -103,8 +103,7 @@
 - `500 Internal Server Error` 서버 오류
 
 
-<br>
-<hr style="border:0; border-top:1px solid #ebebeb; margin:4px 0;">
+<br><br>
 
 **2. 결과 보기**
 - **URL:** `/compare/`
