@@ -242,19 +242,19 @@ async function startHttpServer() {
     app.use(express.json());
 
     // 1) search-drugs
-        app.get('/search-drugs', async (req, res) => {
-            const query = req.query.query as string;
-            const limit = parseInt(req.query.limit as string) || 10;
-    
-            if (!query) return res.status(400).json({ error: 'Missing query parameter' });
-    
-            try {
-                const drugs = await searchDrugs(query, limit);
-                res.json(formatDrugSearchResults(drugs, query));
-            } catch (error) {
-                res.json({});
-            }
-        });
+    app.get('/search-drugs', async (req, res) => {
+        const query = req.query.query as string;
+        const limit = parseInt(req.query.limit as string) || 10;
+
+        if (!query) return res.status(400).json({ error: 'Missing query parameter' });
+
+        try {
+            const drugs = await searchDrugs(query, limit);
+            res.json(formatDrugSearchResults(drugs, query));
+        } catch (error) {
+            res.json({});
+        }
+    });
 
     // 10) search-medical-databases
     app.get('/search-medical-databases', async (req, res) => {
@@ -265,20 +265,6 @@ async function startHttpServer() {
         try {
             const results = await searchMedicalDatabases(query);
             res.json(formatMedicalDatabasesSearch(results, query));
-        } catch (error) {
-            res.json({});
-        }
-    });
-
-    // 11) search-medical-journals
-    app.get('/search-medical-journals', async (req, res) => {
-        const query = req.query.query as string;
-
-        if (!query) return res.status(400).json({ error: 'Missing query parameter' });
-
-        try {
-            const results = await searchMedicalJournals(query);
-            res.json(formatMedicalJournalsSearch(results, query));
         } catch (error) {
             res.json({});
         }

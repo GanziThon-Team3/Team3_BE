@@ -2,6 +2,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from standards.models import TreatmentStandard, DrugStandard
 from .serializers import ComparisonInputSerializer
+from .ai_graph import graph
+from rest_framework import status
 
 # 차이와 타입을 받아 텍스트로 반환하는 함수
 # 팀 상의 후 비율과 텍스트 수정 예정
@@ -152,3 +154,43 @@ class ComparisonView(APIView):
         results['drug_items_comparison'] = drug_comparison_results
 
         return results # 모든 비교가 완료된 최종 results 반환
+
+class AiInfoView(APIView):
+    def post(self, request, *args, **kwargs):
+        body = request.data
+
+        disease_code = body.get("disease")
+        drug_name = body.get("drug_name")
+
+        try:
+            disease_obj = TreatmentStandard.objects.get(disease=disease_code)
+            disease_name = disease_obj.disease_name
+        except TreatmentStandard.MultipleObjectsReturned:
+            disease_obj = (
+                TreatmentStandard.objects
+                .filter(disease=disease_code)
+                .order_by("id")
+                .first()
+            )
+            disease_name = disease_obj.disease_name
+        except TreatmentStandard.DoesNotExist:
+            return Response(
+                {"error": f"해당 질병 코드({disease_code})에 해당하는 정보가 없습니다."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        initial_state = {
+            "disease_name": disease_name,
+            "drug_name": drug_name,
+            "disease_name_eng": None,
+            "drug_name_eng": None,
+            "disease_raw": None,
+            "drug_raw": None,
+            "result":None
+        }
+
+        final_state = graph.invoke(initial_state)
+        return Response(final_state["result"], status=status.HTTP_200_OK)
+
+        # 디버깅용
+        # return Response(final_state, status=status.HTTP_200_OK)
