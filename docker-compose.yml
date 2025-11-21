@@ -1,9 +1,6 @@
 version: '3'
 services:
     web:
-        build:
-            context: .
-            dockerfile: Dockerfile
         image: server # ex) server
         container_name: web # ex) web
         command: bash -c "gunicorn config.wsgi:application -b 0.0.0.0:8000" # 서버 실행
