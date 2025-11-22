@@ -1,292 +1,269 @@
-# API 명세서
----
-## 📖 목차
-1. [기본 정보](#📌-기본-정보)
-2. [AI 건강정보](#😈​-​AI-건강정보)
-3. [통계 결과창](#🤡-통계-결과창)
+# 📚 API 명세서
 
 ---
-## 📌 기본 정보
+
+## 📖 목차
+
+1. 기본 정보
+2. 질병 검색
+3. 통계 결과
+4. AI 건강정보
+5. 추가 질의 응답
+
+---
+
+## 1. 기본 정보
+
 - **Base URL:** `kikoky.shop`
 - **Content-Type:** `application/json`
 - **인증:** 없음 (로그인 없이 사용 가능)
 
 ---
 
-## 😈​​ AI 건강정보
+## 2. 질병 검색
+
+- **URL:** `/search/diseases/?query=[사용자 입력 문자열]`
+- **Method:** `GET`
+
+### 📌 요청 설명
+
+사용자가 질병 입력창에 입력한 문자열을 `query` 파라미터로 전달합니다.
+
+**예시 요청**
+
+```
+GET /search/diseases/?query=비염
+
+```
+
+### 📌 Response 예시
+
+```json
+[
+  {
+    "code": "J00",
+    "name": "감염성 비염"
+  },
+  {
+    "code": "J300",
+    "name": "혈관운동성 비염"
+  }
+]
+
+```
+
+### 📌 응답 설명
+
+- 응답은 리스트 형태
+    - `code`: 질병 코드
+    - `name`: 질병 이름
+- 다음 경우 빈 리스트 반환 (`[]`)
+    - query 없음
+    - 한 글자 입력
+    - 검색 결과 없음
+
+### 📌 Status Codes
+
+- `200 OK`
+- `400 Bad Request`
+- `500 Internal Server Error`
+
+---
+
+## 3. 통계 결과
+
+### ✔ 3-1. 결과 보기
+
+- **URL:** `/compare/`
+- **Method:** `POST`
+
+### 📌 요청 설명
+
+사용자의 진료비·처방일수·투약량을 통계 기준과 비교합니다.
+
+### 공통 필드
+
+| 필드 | 설명 |
+| --- | --- |
+| dept | 진료 과목 |
+| age_group | 연령대(미성년자/성인/고령자) |
+| disease | 질병 코드 |
+| user_fee | 사용자 부담금 |
+| is_saturday | 토요일/공휴일 여부 |
+| is_night | 야간 여부 |
+
+### drug_items 리스트
+
+| 필드 | 설명 |
+| --- | --- |
+| drug_name | 약품 이름 |
+| user_once_dose | 1회 투약량 |
+| user_daily_times | 일일 투약 횟수 |
+| user_days | 처방 일수 |
+
+### 📌 Request Body 예시
+
+```json
+{
+  "dept": "내과",
+  "age_group": "성인",
+  "disease": "A062",
+  "user_fee": 15000,
+  "is_saturday": false,
+  "is_night": false,
+  "drug_items": [
+    {
+      "drug_name": "세파피린정",
+      "user_once_dose": 3.0,
+      "user_daily_times": 3.0,
+      "user_days": 3
+    },
+    {
+      "drug_name": "세토펜현탁액",
+      "user_once_dose": 2.5,
+      "user_daily_times": 3.0,
+      "user_days": 3
+    }
+  ]
+}
+
+```
+
+### 📌 Response 예시
+
+```json
+{
+  "comparison_results": {
+    "treatment_fee": {
+      "sample_count": 16,
+      "avg_fee": 22629,
+      "user_fee": 15000,
+      "difference_percent": -33.71,
+      "level_text": "낮음"
+    },
+    "treatment_days": {
+      "sample_count": 16,
+      "avg_days": 3.9,
+      "user_days": 5,
+      "difference_percent": 29.03,
+      "level_text": "높음"
+    },
+    "drug_items_comparison": [
+      {
+        "drug_name": "세파피린정",
+        "sample_count": 3357,
+        "avg_total_dose": 12.75,
+        "user_total_dose": 27.0,
+        "difference_percent": 111.72,
+        "level_text": "높음"
+      },
+      {
+        "drug_name": "세토펜현탁액",
+        "sample_count": 1240,
+        "avg_total_dose": 10.0,
+        "user_total_dose": 22.5,
+        "difference_percent": 125.0,
+        "level_text": "높음"
+      }
+    ]
+  }
+}
+
+```
+
+### 📌 Status Codes
+
+- `200 OK`
+- `400 Bad Request`
+- `500 Internal Server Error`
+
+---
+
+## 4. AI 건강정보
 
 - **URL:** `/ai_info/`
 - **Method:** `POST`
-- **설명** 
 
+### 📌 설명
 
-&nbsp;&nbsp;`disease`: 질병 코드(대문자, 숫자만 허용)
+입력된 **질병 코드 + 약품명**을 기반으로
 
+- 질병 설명 (`disease_info`)
+- 약품 설명 (`drug_info`)
+- 건강 관리 팁 (`health_tip`)
+    
+    을 AI가 생성합니다.
+    
 
-&nbsp;&nbsp;`drug_name`: 약품 이름
+### 📌 Request Body 예시
 
-
-<br>
-
-- **Request Body :**
-```
+```json
 {
-  "disease”:”AO62”,    "drug_name": "세파피린정"
+  "disease": "A062",
+  "drug_name": "세토펜현탁액"
 }
-```
-<br>
 
-- **Response :**
 ```
+
+### 📌 Response 예시
+
+```json
 {
-  ”disease_info”:”STR”,
-”drug_info”:”STR”,
-”health_tip”:”STR”
+  "disease_info": "아메바성 비이질성 결장염은 ...",
+  "drug_info": "세토펜현탁액은 ...",
+  "health_tip": "1. 감염 예방을 위해 손 씻기..."
 }
+
 ```
-<br>
 
-**Status Codes**
+### 📌 Status Codes
 
-- `201 Created` 성공
-
-- `400 Bad Request` 필수값 누락
-
-- `500 Internal Server Error` 서버 오류
+- `200 OK`
+- `400 Bad Request`
+- `500 Internal Server Error`
 
 ---
-## 🤡​​​ 통계 결과창
 
-<br>
+## 5. 추가 질의 응답
 
-**1. 질병 검색**
-- **URL:** `/search/diseases/?query=[사용자 입력 문자열]`
-- **Method:** `GET`
-- **요청 설명:** 사용자가 질병 입력창에 입력한 문자열을 ‘query’라는 이름의 쿼리 파라미터로 보냄 
-
-
-<br>
-
-- **Response :**
-```
-[
-    {
-    “code”: “J00”,
-    “name": "감염성 비염”
-    },
-    {
-    "code": "J300",
-    "name": "혈관운동성 비염"
-    },
-    …
-]
-```
-<br>
-
-- **응답 설명** 
-
-&nbsp;&nbsp;- 리스트(쿼리셋)로 응답  
-&nbsp;&nbsp;`code`: 질병 코드(백엔드에 넘겨줘야 할 것)  
-&nbsp;&nbsp;`name`: 질병 이름(사용자가 질병 코드를 선택할 수 있도록 보여주는 것)  
-
-&nbsp;&nbsp;- 쿼리 파라미터가 없거나, 한글자거나, 검색 결과가 없는 경우
-&nbsp;&nbsp;→ [ ](빈 쿼리셋) 반환
-
-<br>
-
-**Status Codes**
-
-- `201 Created` 성공
-
-- `400 Bad Request` 필수값 누락
-
-- `500 Internal Server Error` 서버 오류
-
-
-<br><br>
-
-**2. 결과 보기**
-- **URL:** `/compare/`
+> /ai_info/ 결과를 기반으로 사용자가 “추가 질문”을 입력하면,
+> 
+> 
+> 그 질문에 대한 AI 답변을 반환하는 API입니다.
+> 
+- **URL:** `/ai_answer/`
 - **Method:** `POST`
-- **요청 설명** 
+- **Content-Type:** `application/json`
 
+### 📌 요청 설명
 
-&nbsp;&nbsp;`dept`: 진료 과목  
+- `question` 한 가지만 전송하면 됨.
+- 백엔드는 직전 질병/약품 정보를 자동으로 활용해 답변 생성.
 
+### 📌 Request Body 예시
 
-&nbsp;&nbsp;`age_group`: 연령대(미성년자/성인/고령자)  
-
-
-&nbsp;&nbsp;`disease`: 질병 코드(대문자, 숫자만 허용)  
-
-
-&nbsp;&nbsp;`user_fee`: 사용자 부담금, 정수형  
-
-
-&nbsp;&nbsp;`is_saturday`: 토요일/공휴일 여부(false/true)  
-
-
-&nbsp;&nbsp;`is_night`: 야간 여부(false/ture)  
-
-
-&nbsp;&nbsp;· · ·
-
-&nbsp;&nbsp;`drug_items`: 약품 객체 리스트  
-
-
-&nbsp;&nbsp;`drug_name`: 약품 이름  
-
-
-&nbsp;&nbsp;`user_once_dose`: 투약량, 실수형  
-
-
-&nbsp;&nbsp;`user_daily_times`: 횟수, 실수형  
-
-
-&nbsp;&nbsp;`user_days`: 일수, 실수형  
-
-<br>
-
-- **Request Body :**
-```
+```json
 {
-"dept": "내과",
-"age_group": "성인",
-"disease": "A062",
-"user_fee": 15000,
-"is_saturday": false,
-"is_night": false,
-"drug_items": [
-    {
-    "drug_name": "세파피린정",
-    "user_once_dose": 3.0,
-    "user_daily_times": 3.0,
-    "user_days": 3
-    },
-    {
-    "drug_name": "세토펜현탁액",
-    …
-    }
-    …
-    ]
+  "question": "타이레놀 주의사항에 대해 더 자세히 알려줘"
 }
-```
-<br>
 
-- **Response :**
 ```
+
+### 📌 Response 예시
+
+```json
 {
-"comparison_results": {
-"treatment_fee": {
-    "sample_count": 16,
-    "avg_fee": 22629,
-    "user_fee": 15000,
-    "difference_percent": -33.71,
-    "level_text": "낮음"
-},
-"treatment_days": {
-    "sample_count": 16,
-    "avg_days": 3.9,
-    "user_days": 5,
-    "difference_percent": 29.03,
-    "level_text": "높음"
-},
-"drug_items_comparison": [
-    {
-    "drug_name": "세파피린정",
-    "sample_count": 3357,
-    "avg_total_dose": 12.75,
-    "user_total_dose": 27.0,
-    "difference_percent": 111.72,
-    "level_text": "높음"
-    },
-    {
-    "drug_name": "세토펜현탁액",
-    …
-    }
-    …
-    ]
+  "result": "타이레놀(아세트아미노펜) 주의사항:\n- 간 손상 위험이 있어 하루 최대 4,000mg 이하 복용...\n- 음주 후 복용 시 간독성 증가...\n..."
 }
-}
+
 ```
-<br>
 
-- **응답 설명** 
+### 📌 응답 설명
 
+- `result`: 사용자의 질문에 AI가 생성한 텍스트 전체
 
-&nbsp;&nbsp;`comparision_results`: 비교 결과 객체  
+### 📌 Status Codes
 
-
-&nbsp;&nbsp;· · ·
-
-&nbsp;&nbsp;`treatment_fee`: 진료비 비교 객체  
-
-
-&nbsp;&nbsp;`sample_count`: 비교 표본 수(정수형)  
-
-
-&nbsp;&nbsp;`avg_fee`: 평균 진료비(실수형)  
-
-
-&nbsp;&nbsp;`user_fee`: 사용자 지불 비용(정수형)  
-
-
-&nbsp;&nbsp;`difference_percent`: 평균 보다 얼마나 더 지불했는지(퍼센트, 실수형)  
-&nbsp;&nbsp;*9999.0일 경우 평균이 0이고, 사용자 지불이 있는 경우  
-
-
-&nbsp;&nbsp;`level_text`: 라벨링에 사용  
-
-&nbsp;&nbsp;· · ·
-
-
-&nbsp;&nbsp;`treatment_days`: 처방일수 비교 객체  
-
-
-&nbsp;&nbsp;`sample_count`: 비교 표본 수(정수형)  
-
-
-&nbsp;&nbsp;`avg_days`: 평균 처방 일수(실수형)  
-
-
-&nbsp;&nbsp;`user_days`: 사용자 입력 처방 일수(정수형)  
-
-
-&nbsp;&nbsp;`difference_percent`: 평균 보다 얼마나 더 처방 받았는지(퍼센트, 실수형)  
-
-
-&nbsp;&nbsp;`level_text`: 라벨링에 사용  
-
-
-&nbsp;&nbsp;· · ·
-
-&nbsp;&nbsp;`drug_items_comparison`: 약품별 비교 객체 리스트  
-
-
-&nbsp;&nbsp;`drug_name`: 약품 이름  
-
-
-&nbsp;&nbsp;`sample_count`: 비교 표본 수(정수형)  
-
-
-&nbsp;&nbsp;`avg_total_dose`: 평균 총 투약량(실수형)  
-
-
-&nbsp;&nbsp;`user_total_dose`: 사용자 입력 총 투약량(실수형)  
-
-
-&nbsp;&nbsp;`difference_percent`: 평균 보다 얼마나 더 처방 받았는지(퍼센트, 실수형)  
-
-
-&nbsp;&nbsp;`level_text`: 라벨링에 사용
-
-
-<br>
-
-**Status Codes**
-
-- `201 Created` 성공
-
-- `400 Bad Request` 필수값 누락
-
-- `500 Internal Server Error` 서버 오류
+- `200 OK`
+- `400 Bad Request`
+- `500 Internal Server Error`
