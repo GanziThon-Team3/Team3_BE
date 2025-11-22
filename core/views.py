@@ -1,9 +1,13 @@
 from rest_framework.views import APIView 
 from rest_framework.response import Response
-from standards.models import TreatmentStandard, DrugStandard
-from .serializers import ComparisonInputSerializer
+from standards.models import TreatmentStandard, DrugStandard, DiseaseMapping
+from .serializers import ComparisonInputSerializer, DiseaseSearchSerializer
+from .ai_graph import graph
+from rest_framework import status
+from .ai_tool_call import ai_answer
+from rest_framework import generics
+from rest_framework.exceptions import ValidationError
 
-# 차이와 타입을 받아 텍스트로 반환하는 함수
 # 팀 상의 후 비율과 텍스트 수정 예정
 def _get_comparison_level(diff_percent):
     if diff_percent > 10.0: # +10% 초과
@@ -152,3 +156,80 @@ class ComparisonView(APIView):
         results['drug_items_comparison'] = drug_comparison_results
 
         return results # 모든 비교가 완료된 최종 results 반환
+
+class AiInfoView(APIView):
+    def post(self, request, *args, **kwargs):
+        body = request.data
+
+        disease_code = body.get("disease")
+        drug_name = body.get("drug_name")
+
+        try:
+            disease_obj = TreatmentStandard.objects.get(disease=disease_code)
+            disease_name = disease_obj.disease_name
+        except TreatmentStandard.MultipleObjectsReturned:
+            disease_obj = (
+                TreatmentStandard.objects
+                .filter(disease=disease_code)
+                .order_by("id")
+                .first()
+            )
+            disease_name = disease_obj.disease_name
+        except TreatmentStandard.DoesNotExist:
+            return Response(
+                {"error": f"해당 질병 코드({disease_code})에 해당하는 정보가 없습니다."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        initial_state = {
+            "disease_name": disease_name,
+            "drug_name": drug_name,
+            "disease_name_eng": None,
+            "drug_name_eng": None,
+            "disease_raw": None,
+            "drug_raw": None,
+            "result":None
+        }
+
+        final_state = graph.invoke(initial_state)
+        return Response(final_state["result"], status=status.HTTP_200_OK)
+
+        # # 디버깅용
+        return Response(final_state, status=status.HTTP_200_OK)
+
+class AiAnswerView(APIView):
+    def post(self, request, *args, **kwargs):
+        question = request.data.get("question")
+
+        if not question:
+            return Response(
+                {"error": "question 필드를 body에 포함해주세요."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            result = ai_answer(question).get("result")
+
+            return Response({"result": result}, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+# 질병 코드 매핑
+class DiseaseSearchView(generics.ListAPIView):
+    serializer_class = DiseaseSearchSerializer
+    
+    # GET 요청시 실행, 쿼리셋 반환
+    def get_queryset(self):
+        # 쿼리 파라미터값 가져옴(없으면 빈 문자열('') 반환)
+        query = self.request.query_params.get('query', '')
+        
+        if not query or len(query) < 2: # 쿼리 파라미터가 없거나 너무 짧으면 빈 쿼리셋 반환
+            return DiseaseMapping.objects.none()
+
+        # query를 포함하는 모든 DiseaseMapping 객체 필터링
+        return DiseaseMapping.objects.filter(
+            disease_name__icontains=query
+        )

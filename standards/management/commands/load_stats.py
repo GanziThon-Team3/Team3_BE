@@ -6,7 +6,7 @@ from django.db import transaction
 class Command(BaseCommand): 
     # 커맨드 실행 시 호출되는 메인 함수
     def handle(self, *args, **options):
-        self.stdout.write(self.style.NOTICE("--- Starting Test Data Load ---")) # 터미널에 로딩 시작 알림 출력
+        self.stdout.write(self.style.NOTICE("--- Starting Data Load ---")) # 터미널에 로딩 시작 알림 출력
 
         BASE_DIR = 'data/' # 데이터 파일 디렉토리
         TREATMENT_FILE = BASE_DIR + 'treat_stats_2023.csv' # 진료내역 파일 경로

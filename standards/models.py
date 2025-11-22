@@ -32,3 +32,14 @@ class DrugStandard(models.Model):
     class Meta:
         verbose_name = "의약품처방 기준 통계"
         unique_together = ('drug_name', 'age_group')
+
+# 질병 코드 매핑 데이터
+class DiseaseMapping(models.Model):
+    disease_code = models.CharField(max_length=50, unique=True, verbose_name="주상병 코드")
+    disease_name = models.CharField(max_length=255, verbose_name="질병명")
+    
+    class Meta:
+        verbose_name = "질병 코드 매핑 데이터"
+        indexes = [ # 인덱스 추가
+            models.Index(fields=['disease_name']),
+        ]

@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from standards.models import DiseaseMapping
 
 # 약품 하나의 구조와 타입 정의
 class DrugItemSerializer(serializers.Serializer):
@@ -30,3 +31,12 @@ class ComparisonInputSerializer(serializers.Serializer):
         allow_empty=True, # 빈 리스트도 허용
         help_text="처방 약품 목록"
     )
+
+# 질병코드 검색 직렬화
+class DiseaseSearchSerializer(serializers.ModelSerializer):
+    code = serializers.CharField(source='disease_code')
+    name = serializers.CharField(source='disease_name')
+    
+    class Meta:
+        model = DiseaseMapping
+        fields = ['code', 'name']
