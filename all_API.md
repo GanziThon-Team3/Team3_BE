@@ -190,13 +190,11 @@ GET /search/diseases/?query=비염
 Langgraph에 연결된 node 순서대로
 PubMed, Scholar, Cochrane, ClinicalTrials에서 에서 질병정보를, 
 FAD open database에서 약정보를 가져와
-LLM으로 최종 요약 제공한다.ㅁ
+LLM으로 최종 요약 제공한다.
 
 - 질병 설명 (`disease_info`) : 질병의 개요, 주요 증상을 1~2문장 이내로 요약 제공
 - 약품 설명 (`drug_info`) : 약의 성분, 용도, 주의사항을1~2문장 이내로 요약 제공
-- 건강 관리 팁 (`health_tip`) : 질병에 대한 생활습관(식단/운동/수면 등), 간단한 치료/관리 내용을 4~6문장 정도로 요약 제공
-    
-    을 AI가 생성합니다.
+- 건강 관리 팁 (`health_tip`) : 질병에 대한 생활습관(식단/운동/수면 등), 간단한 치료/관리 내용을 4~6문장 정도로 요약 제공을 AI가 생성합니다.
     
 
 ### 📌 Request Body 예시
